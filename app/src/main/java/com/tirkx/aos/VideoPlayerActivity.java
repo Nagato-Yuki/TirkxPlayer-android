@@ -17,6 +17,9 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
+import android.view.SurfaceView;
+import android.view.SurfaceHolder;
+import android.media.MediaPlayer;
 
 import org.w3c.dom.Text;
 
@@ -32,7 +35,7 @@ import java.net.URLEncoder;
 // VideoPlayer Activity
 // Known Bug : lose buffer when OnPause Call
 
-public class VideoPlayerActivity extends ActionBarActivity {
+public class VideoPlayerActivity extends ActionBarActivity implements MediaPlayer.OnBufferingUpdateListener, SurfaceHolder.Callback, MediaPlayer.OnPreparedListener{
     private VideoFileDataSet currentAnime;
     private String animeName;
     private int currentVideotTime = 0;
@@ -51,6 +54,11 @@ public class VideoPlayerActivity extends ActionBarActivity {
     private SeekBar seekBar;
     private ImageView loadingImage;
     private Thread backEndThread;
+    private ImageView playpauseControl;
+    //FIX buffer lost when onPause call
+    private SurfaceHolder mHolder;
+    private MediaPlayer mMediaPlayer;
+    //
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @Override
@@ -63,9 +71,13 @@ public class VideoPlayerActivity extends ActionBarActivity {
         filename.setText(extra.getString("filename"));
         mShortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
         vidView = (VideoView)findViewById(R.id.videoplayer_videoview);
+        //FIX buffer lost when calling onPause
+        mHolder = vidView.getHolder();
+        mHolder.addCallback(this);
+        //
         seekBar = (SeekBar)findViewById(R.id.videoplayer_seekbar);
         loadingImage = (ImageView)findViewById(R.id.videoplayer_imgloading);
-        final ImageView playpauseControl = (ImageView)findViewById(R.id.videoplayer_playpause);
+        playpauseControl = (ImageView)findViewById(R.id.videoplayer_playpause);
         currentTime = (TextView)findViewById(R.id.videoplayer_timecurrent);
         endTime = (TextView)findViewById(R.id.videoplayer_timeend);
         nameZone = (RelativeLayout)findViewById(R.id.videoplayer_namedisplay);
@@ -164,56 +176,7 @@ public class VideoPlayerActivity extends ActionBarActivity {
                 }
             }
         });
-        vidView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                endVideoTime = vidView.getDuration();
-                endTime.setText(secToString((long) Math.floor(vidView.getDuration() / 1000)));
-                if(Build.VERSION.SDK_INT>=22) {
-                    playpauseControl.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause_white_24dp, getTheme()));
-                }else{
-                    playpauseControl.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause_white_24dp));
-                }
-                isVideoPlaying = true;
-                backEndThread = new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            while (!isInterrupted()) {
-                                Thread.sleep(1000);
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        currentVideotTime = vidView.getCurrentPosition();
-                                        if(isVideoPlaying&&isDisplayMediaController){
-                                            if(displayMediaControllerCount==3){
-                                                hideMediaController();
-                                            }
-                                            displayMediaControllerCount++;
-                                        }
-                                        if(isVideoPlaying&&lastVideoTime == currentVideotTime) {
-                                            loadingImage.setVisibility(View.VISIBLE);
-                                        }else{
-                                            if(!isMoreThanKitkat&&loadingImage.getVisibility() == View.VISIBLE){
-                                                loadingImage.setVisibility(View.GONE);
-                                            }
-                                            lastVideoTime = currentVideotTime;
-                                        }
-                                        currentTime.setText(secToString((long) Math.floor(vidView.getCurrentPosition() / 1000)));
-                                        seekBar.setProgress((int) Math.floor((float) currentVideotTime / (float) vidView.getDuration() * 100));
-                                        seekBar.setSecondaryProgress(vidView.getBufferPercentage());
-
-                                    }
-                                });
-                            }
-                        } catch (InterruptedException e) {
-                        }
-                    }
-                };
-
-                backEndThread.start();
-            }
-        });
+        vidView.setOnPreparedListener(this);
 
     }
 
@@ -308,5 +271,81 @@ public class VideoPlayerActivity extends ActionBarActivity {
         if(backEndThread!=null) {
             backEndThread.interrupt();
         }
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder)
+    {
+
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
+    {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder)
+    {
+
+    }
+
+    @Override
+    public void onPrepared(MediaPlayer mp)
+    {
+        mMediaPlayer = mp;
+        mMediaPlayer.setOnBufferingUpdateListener(this);
+        endVideoTime = vidView.getDuration();
+        endTime.setText(secToString((long) Math.floor(vidView.getDuration() / 1000)));
+        if(Build.VERSION.SDK_INT>=22) {
+            playpauseControl.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause_white_24dp, getTheme()));
+        }else{
+            playpauseControl.setImageDrawable(getResources().getDrawable(R.drawable.ic_pause_white_24dp));
+        }
+        isVideoPlaying = true;
+        backEndThread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    while (!isInterrupted()) {
+                        Thread.sleep(1000);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                currentVideotTime = vidView.getCurrentPosition();
+                                if(isVideoPlaying&&isDisplayMediaController){
+                                    if(displayMediaControllerCount==3){
+                                        hideMediaController();
+                                    }
+                                    displayMediaControllerCount++;
+                                }
+                                if(isVideoPlaying&&lastVideoTime == currentVideotTime) {
+                                    loadingImage.setVisibility(View.VISIBLE);
+                                }else{
+                                    if(!isMoreThanKitkat&&loadingImage.getVisibility() == View.VISIBLE){
+                                        loadingImage.setVisibility(View.GONE);
+                                    }
+                                    lastVideoTime = currentVideotTime;
+                                }
+                                currentTime.setText(secToString((long) Math.floor(vidView.getCurrentPosition() / 1000)));
+                                seekBar.setProgress((int) Math.floor((float) currentVideotTime / (float) vidView.getDuration() * 100));
+                                seekBar.setSecondaryProgress(vidView.getBufferPercentage());
+
+                            }
+                        });
+                    }
+                } catch (InterruptedException e) {
+                }
+            }
+        };
+
+        backEndThread.start();
+    }
+
+    @Override
+    public void onBufferingUpdate(MediaPlayer mp, int percent)
+    {
+        Log.i("VidPlayer","------->"+percent);
     }
 }
