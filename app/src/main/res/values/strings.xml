@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Tirkx Player</string>
+
+    <string name="title_section1">ปักหมุด</string>
+    <string name="title_section2">ฉายจบแล้ว</string>
+    <string name="title_section3">เกี่ยวกับ</string>
+    <string name="title_section4">มาใหม่</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_example">Example action</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="search">ค้นหา</string>
+    <string name="search_anime">ค้นหารายชื่ออนิเมะ</string>
+    <string name="credit">พัฒนาโดย pureexe</string>
+    <string name="connection_problem">การเชื่อมต่อมีปัญหา</string>
+    <string name="file_not_found">ไม่พบไฟล์ที่ท่านต้องการ</string>
+    <string name="preload_sqlite_fetchfail">การดึงข้อมูลจาก SQLite ล้มเหลว กรุณาลบแอปออกและติดตั้งใหม่</string>
+    <string name="file_anime_not_found">อนิเมะเรื่องนี้ไม่มีไฟล์ใดๆอยู่เลย</string>
+</resources>
