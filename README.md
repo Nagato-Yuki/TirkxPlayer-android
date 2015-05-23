@@ -4,7 +4,7 @@ Sorry for inconvenience, We only avaliable in thai language only.
 
 ## วิธีการใช้งาน
 ### ผู้ใช้ทั่วไป
-- ดาวน์โหลดแอปพลิเคชันได้ทาง [Play Store](https://play.google.com/store/apps/details?id=com.tirkx.aos)
+- ดาวน์โหลดแอปพลิเคชันได้ทาง [ที่นี่](https://tirkx.pureapp.in.th/tirkxplayer-spring-2015-1.apk)
 
 ### นักพัฒนา
 - fork repo นี้ แล้ว import เข้าผ่านทาง Android Studio แก้โค้ดที่ท่านต้องการ จากนั้นส่ง pull request กลับมายังที่ repo นี้ เพื่อตรวจสอบ หลังจากนั้นผมจะ merge เข้า branch master ก่อนส่งขึ้น Play Store เป็นลำดับถัดไป
